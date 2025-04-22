@@ -143,6 +143,21 @@ def verctor_norm(vector: tuple[int, int]) -> float:
     return (vector[0] ** 2 + vector[1] ** 2) ** 0.5
 
 
+def calc_orientation(org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float]) -> tuple[float, float]:
+
+    distance = vector_diff(org, dst)
+    distance_norm = verctor_norm(distance)
+
+    if distance_norm == 0:
+        return current_xy
+
+    if distance_norm < 300:
+        return current_xy
+    else:
+        vx = distance[0] * (math.sqrt(50) / distance_norm)
+        vy = distance[1] * (math.sqrt(50) / distance_norm)
+        return vx, vy
+
 def main():
     """
     ゲームのメイン関数。
@@ -210,17 +225,8 @@ def main():
         if not bound["y"]:
             vy = -vy
 
-        # ベクトル差を計算する
-        distance_kouka_bb = vector_diff(kk_rct, bb_rct)
-        # ベクトルのノルムを計算
-        distance_norm = verctor_norm(distance_kouka_bb)
-        if distance_norm < 300:
-            bb_rct.move_ip(last_vx, last_vy)
-        else:
-            vx = distance_kouka_bb[0] * (math.sqrt(50) / distance_norm)
-            vy = distance_kouka_bb[1] * (math.sqrt(50) / distance_norm)
-            bb_rct.move_ip(vx, vy)
-            last_vx, last_vy = vx, vy
+        vx, vy = calc_orientation(kk_rct, bb_rct, (vx, vy))
+        bb_rct.move_ip(vx, vy)
         screen.blit(bb_img, bb_rct)
 
         # こうかとんと爆弾が衝突した時
