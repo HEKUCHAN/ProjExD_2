@@ -1,3 +1,4 @@
+import math
 import os
 import random
 import sys
@@ -33,9 +34,9 @@ def load_assets():
     return bg_img
 
 
-def initialize_objects(kk_img):
-    kk_rct = kk_img.get_rect()
-    kk_rct.center = 300, 200
+def initialize_random_object(img: pg.Surface) -> pg.Rect:
+    kk_rct = img.get_rect()
+    kk_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
 
     return kk_rct
 
@@ -98,6 +99,25 @@ def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
 
     return kk_img
 
+def vector_diff(rect1: pg.Rect, rect2: pg.Rect) -> tuple[int, int]:
+    """
+    サーフェース間のベクトル差を計算する関数。
+
+    surface1とsurface2の中心座標を取得し、その差を計算して返す。
+    """
+    center1 = rect1.center
+    center2 = rect2.center
+
+    return (center1[0] - center2[0], center1[1] - center2[1])
+
+def verctor_norm(vector: tuple[int, int]) -> float:
+    """
+    ベクトルの大きさを計算する関数。
+
+    vectorのx成分とy成分を取得し、ピタゴラスの定理を使って大きさを計算して返す。
+    """
+    return (vector[0] ** 2 + vector[1] ** 2) ** 0.5
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -118,8 +138,7 @@ def main():
     tmr = 0
 
     bb_img = bb_imgs[min(tmr // 500, 9)]
-    bb_rct = bb_img.get_rect()
-    bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
+    bb_rct = initialize_random_object(bb_img)
     vx, vy = vx_init, vy_init
 
     while True:
@@ -144,22 +163,35 @@ def main():
 
         kk_img = get_kk_img(sum_mv)
         if tmr == 0:
-            kk_rct = initialize_objects(kk_img)
+            kk_rct = initialize_random_object(kk_img)
 
+        # こうかとんの表示、移動
         kk_rct.move_ip(sum_mv)
         kk_rct.clamp_ip(screen_rct)
         screen.blit(kk_img, kk_rct)
 
-        bb_rct.move_ip(vx, vy)
+        # bb_rct.move_ip(vx, vy)
         bound = check_bound(screen_rct, bb_rct)
         if not bound["x"]:
             vx = -vx
         if not bound["y"]:
             vy = -vy
 
+        distance_kouka_bb = vector_diff(kk_rct, bb_rct)
+        distance_norm = verctor_norm(distance_kouka_bb)
+        last_vx, last_vy = vx, vy
+        if distance_norm < 300:
+            bb_rct.move_ip(last_vx, last_vy)
+        else:
+            vx = distance_kouka_bb[0] * (math.sqrt(50) / distance_norm)
+            vy = distance_kouka_bb[1] * (math.sqrt(50) / distance_norm)
+            bb_rct.move_ip(vx, vy)
+            last_vx, last_vy = vx, vy
         screen.blit(bb_img, bb_rct)
 
         if kk_rct.colliderect(bb_rct):
+            gameover(screen, bg_img)
+            kk_rct = initialize_random_object(kk_img)
             tmr = 0
 
         pg.display.update()
