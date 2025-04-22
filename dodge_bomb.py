@@ -15,31 +15,30 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
 def check_bound(scr_rct, obj_rct) -> dict[str, bool]:
+    """
+    オブジェクトの位置が画面内に収まっているかをチェックする関数。
+
+    収まっている場合はTrue、収まっていない場合はFalseを返す。
+    """
     return {
         "x": scr_rct.left <= obj_rct.left and obj_rct.right <= scr_rct.right,
         "y": scr_rct.top <= obj_rct.top and obj_rct.bottom <= scr_rct.bottom,
     }
 
 
+
 def load_assets():
     bg_img = pg.image.load("fig/pg_bg.jpg")
     kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
-    bb_img = pg.Surface((20, 20))
-    pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)
-    bb_img.set_colorkey((0, 0, 0))
 
-    return bg_img, kk_img, bb_img
+    return bg_img, kk_img
 
 
 def initialize_objects(kk_img):
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
 
-    bb_rct = pg.Rect(0, 0, 20, 20)
-    bb_rct.centerx = random.randint(0, WIDTH)
-    bb_rct.centery = random.randint(0, HEIGHT)
-
-    return kk_rct, bb_rct
+    return kk_rct
 
 
 def gameover(screen: pg.Surface, bg_img: pg.Surface) -> None:
@@ -77,24 +76,41 @@ def gameover(screen: pg.Surface, bg_img: pg.Surface) -> None:
 
 
 def main():
-    global bg_img  # グローバル変数を使用
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     screen_rct = screen.get_rect()
 
-    bg_img, kk_img, bb_img = load_assets()
-    kk_rct, bb_rct = initialize_objects(kk_img)
-    vx, vy = +5, +5
+    bg_img, kk_img = load_assets()
+    kk_rct = initialize_objects(kk_img)
+    vx_init, vy_init = 5, 5
+
+    bb_accs = [i for i in range(1, 11)]
+
+    bb_imgs = []
+    for i in bb_accs:
+        surface = pg.Surface((20 * i, 20 * i), pg.SRCALPHA)
+        pg.draw.circle(surface, (255, 0, 0), (10 * i, 10 * i), 10 * i)
+        bb_imgs.append(surface)
 
     clock = pg.time.Clock()
     tmr = 0
 
+    bb_img = bb_imgs[min(tmr // 500, 9)]
+    bb_rct = bb_img.get_rect()
+    bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
+    vx, vy = vx_init, vy_init
+
     while True:
+        vx = (vx / abs(vx)) * vx_init * bb_accs[min(tmr // 500, 9)]
+        vy = (vy / abs(vy)) * vy_init * bb_accs[min(tmr // 500, 9)]
+        bb_img = bb_imgs[min(tmr // 500, 9)]
+        bb_rct = bb_img.get_rect(center=bb_rct.center)
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return
 
-        screen.blit(bg_img, [0, 0])  # グローバル変数を使用
+        screen.blit(bg_img, [0, 0])
 
         key_lst = pg.key.get_pressed()
         sum_mv = [0, 0]
@@ -114,11 +130,13 @@ def main():
             vx = -vx
         if not bound["y"]:
             vy = -vy
+
         screen.blit(bb_img, bb_rct)
 
         if kk_rct.colliderect(bb_rct):
             gameover(screen, bg_img)
-            kk_rct, bb_rct = initialize_objects(kk_img)
+            kk_rct = initialize_objects(kk_img)
+            tmr = 0
 
         pg.display.update()
         tmr += 1
