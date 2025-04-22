@@ -160,6 +160,19 @@ def calc_orientation(org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float]
         vy = distance[1] * (math.sqrt(50) / distance_norm)
         return vx, vy
 
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    """
+    爆弾の画像を格納するリストと加速値を格納するリストを初期化する関数。
+    """
+    bb_accs = [i for i in range(1, 11)]
+    bb_imgs = []
+    for i in range(1, 11):
+        surface = pg.Surface((20 * i, 20 * i), pg.SRCALPHA)
+        pg.draw.circle(surface, (255, 0, 0), (10 * i, 10 * i), 10 * i)
+        bb_imgs.append(surface)
+
+    return bb_imgs, bb_accs
+
 def main():
     """
     ゲームのメイン関数。
@@ -173,15 +186,7 @@ def main():
     # 加速値の初期値
     vx_init, vy_init = 5, 5
 
-    # 爆弾の加速値を格納するリスト
-    bb_accs = [i for i in range(1, 11)]
-
-    # 爆弾の画像を格納するリスト
-    bb_imgs = []
-    for i in bb_accs:
-        surface = pg.Surface((20 * i, 20 * i), pg.SRCALPHA)
-        pg.draw.circle(surface, (255, 0, 0), (10 * i, 10 * i), 10 * i)
-        bb_imgs.append(surface)
+    bb_imgs, bb_accs = init_bb_imgs()
 
     clock = pg.time.Clock()
     tmr = 0
@@ -189,7 +194,6 @@ def main():
     bb_img = bb_imgs[min(tmr // 500, 9)]
     bb_rct = initialize_random_object(bb_img)
     vx, vy = vx_init, vy_init
-    last_vx, last_vy = vx_init, vy_init
 
     while True:
         vx = (vx / abs(vx)) * vx_init * bb_accs[min(tmr // 500, 9)]
