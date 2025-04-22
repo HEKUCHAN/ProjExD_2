@@ -144,7 +144,9 @@ def verctor_norm(vector: tuple[int, int]) -> float:
 
 
 def calc_orientation(org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float]) -> tuple[float, float]:
-
+    """
+    こうかとんの位置と爆弾の位置を比較し、爆弾の移動方向を計算する関数。
+    """
     distance = vector_diff(org, dst)
     distance_norm = verctor_norm(distance)
 
