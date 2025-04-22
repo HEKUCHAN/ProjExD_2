@@ -143,7 +143,9 @@ def verctor_norm(vector: tuple[int, int]) -> float:
     return (vector[0] ** 2 + vector[1] ** 2) ** 0.5
 
 
-def calc_orientation(org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float]) -> tuple[float, float]:
+def calc_orientation(
+    org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float]
+) -> tuple[float, float]:
     """
     こうかとんの位置と爆弾の位置を比較し、爆弾の移動方向を計算する関数。
     """
@@ -160,6 +162,7 @@ def calc_orientation(org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float]
         vy = distance[1] * (math.sqrt(50) / distance_norm)
         return vx, vy
 
+
 def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     """
     爆弾の画像を格納するリストと加速値を格納するリストを初期化する関数。
@@ -172,6 +175,7 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
         bb_imgs.append(surface)
 
     return bb_imgs, bb_accs
+
 
 def main():
     """
