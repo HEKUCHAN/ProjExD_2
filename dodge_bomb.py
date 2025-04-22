@@ -15,15 +15,6 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
 def check_bound(scr_rct, obj_rct) -> dict[str, bool]:
-    """
-    オブジェクトが画面内に収まっているかを判定する関数。
-
-    画面内に収まっている場合はTrue、画面外に出ている場合はFalseを返す。
-
-    :param scr_rct: 画面のRectオブジェクト
-    :param obj_rct: 判定対象のオブジェクトのRectオブジェクト
-    :return: {"x": x方向の判定結果, "y": y方向の判定結果}
-    """
     return {
         "x": scr_rct.left <= obj_rct.left and obj_rct.right <= scr_rct.right,
         "y": scr_rct.top <= obj_rct.top and obj_rct.bottom <= scr_rct.bottom,
@@ -31,9 +22,6 @@ def check_bound(scr_rct, obj_rct) -> dict[str, bool]:
 
 
 def load_assets():
-    """
-    ゲームのアセット（画像やサーフェス）を読み込んで返す関数。
-    """
     bg_img = pg.image.load("fig/pg_bg.jpg")
     kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
     bb_img = pg.Surface((20, 20))
@@ -43,27 +31,59 @@ def load_assets():
     return bg_img, kk_img, bb_img
 
 
-def initialize_objects(kk_img, bb_img):
-    """
-    プレイヤーと爆弾のRectオブジェクトを初期化して返す。
-    """
+def initialize_objects(kk_img):
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
 
-    bb_rct = bb_img.get_rect()
+    bb_rct = pg.Rect(0, 0, 20, 20)
     bb_rct.centerx = random.randint(0, WIDTH)
     bb_rct.centery = random.randint(0, HEIGHT)
 
     return kk_rct, bb_rct
 
 
+def gameover(screen: pg.Surface, bg_img: pg.Surface) -> None:
+    bg_img = pg.image.load("fig/pg_bg.jpg")
+    bg_rct = bg_img.get_rect()
+
+    font = pg.font.Font(None, 80)
+    text = font.render("GAME OVER", True, (255, 255, 255))
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+
+    font = pg.font.Font(None, 40)
+    text2 = font.render("Press SPACE to Restart", True, (255, 255, 255))
+    text_rect2 = text2.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
+
+    kk_img = pg.image.load("fig/8.png")
+
+    overlay = pg.Surface((WIDTH, HEIGHT))
+    overlay.fill((0, 0, 0))
+    overlay.set_alpha(128)
+
+    while True:
+        pg.display.update()
+
+        screen.blit(bg_img, bg_rct)
+        screen.blit(overlay, (0, 0))
+        screen.blit(text, text_rect)
+        screen.blit(text2, text_rect2)
+        screen.blit(kk_img, (WIDTH // 2 - 240, HEIGHT // 2 - 15))
+        screen.blit(kk_img, (WIDTH // 2 + 200, HEIGHT // 2 - 15))
+
+        for event in pg.event.get():
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_SPACE:
+                    return
+
+
 def main():
+    global bg_img  # グローバル変数を使用
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     screen_rct = screen.get_rect()
 
     bg_img, kk_img, bb_img = load_assets()
-    kk_rct, bb_rct = initialize_objects(kk_img, bb_img)
+    kk_rct, bb_rct = initialize_objects(kk_img)
     vx, vy = +5, +5
 
     clock = pg.time.Clock()
@@ -74,7 +94,7 @@ def main():
             if event.type == pg.QUIT:
                 return
 
-        screen.blit(bg_img, [0, 0])
+        screen.blit(bg_img, [0, 0])  # グローバル変数を使用
 
         key_lst = pg.key.get_pressed()
         sum_mv = [0, 0]
@@ -97,7 +117,8 @@ def main():
         screen.blit(bb_img, bb_rct)
 
         if kk_rct.colliderect(bb_rct):
-            return
+            gameover(screen, bg_img)
+            kk_rct, bb_rct = initialize_objects(kk_img)
 
         pg.display.update()
         tmr += 1
