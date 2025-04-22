@@ -28,12 +28,18 @@ def check_bound(scr_rct, obj_rct) -> dict[str, bool]:
 
 
 def load_assets():
+    """
+    複数の画像を読み込む関数。
+    """
     bg_img = pg.image.load("fig/pg_bg.jpg")
 
     return bg_img
 
 
 def initialize_random_object(img: pg.Surface) -> pg.Rect:
+    """
+    画像をランダムな位置に配置する関数。
+    """
     kk_rct = img.get_rect()
     kk_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
 
@@ -41,19 +47,28 @@ def initialize_random_object(img: pg.Surface) -> pg.Rect:
 
 
 def gameover(screen: pg.Surface, bg_img: pg.Surface) -> None:
+    """
+    ゲームオーバー画面を表示する関数。
+
+    画面を黒く塗りつぶし、"GAME OVER"と"Press SPACE to Restart"のテキストを表示する。
+    """
     bg_img = pg.image.load("fig/pg_bg.jpg")
     bg_rct = bg_img.get_rect()
 
+    # ゲームオーバータイトル
     font = pg.font.Font(None, 80)
     text = font.render("GAME OVER", True, (255, 255, 255))
     text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
 
+    # リスタート方法の説明 😺
     font = pg.font.Font(None, 40)
     text2 = font.render("Press SPACE to Restart", True, (255, 255, 255))
     text_rect2 = text2.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
 
+    # こうかとんの画像を読み込む
     kk_img = pg.image.load("fig/8.png")
 
+    # 画面を黒く塗りつぶす（薄い）
     overlay = pg.Surface((WIDTH, HEIGHT))
     overlay.fill((0, 0, 0))
     overlay.set_alpha(128)
@@ -61,10 +76,13 @@ def gameover(screen: pg.Surface, bg_img: pg.Surface) -> None:
     while True:
         pg.display.update()
 
+        # 画面を黒く塗りつぶす
         screen.blit(bg_img, bg_rct)
         screen.blit(overlay, (0, 0))
+        # 画面の中央にテキストを表示
         screen.blit(text, text_rect)
         screen.blit(text2, text_rect2)
+        # こうかとんの画像を表示
         screen.blit(kk_img, (WIDTH // 2 - 240, HEIGHT // 2 - 15))
         screen.blit(kk_img, (WIDTH // 2 + 200, HEIGHT // 2 - 15))
 
@@ -75,6 +93,10 @@ def gameover(screen: pg.Surface, bg_img: pg.Surface) -> None:
 
 
 def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
+    """
+    こうかとんの画像を取得する関数。
+    移動方向に応じて画像を回転させる。
+    """
     kk_img = pg.image.load("fig/3.png")
     x, y = sum_mv
 
@@ -88,13 +110,13 @@ def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
         kk_img = pg.transform.rotate(kk_img, -45)
     elif x < 0 and y > 0:  # 左下
         kk_img = pg.transform.rotate(kk_img, 45)
-    elif x > 0:
+    elif x > 0:  # 右
         kk_img = pg.transform.flip(kk_img, True, False)
-    elif x < 0:
+    elif x < 0:  # 左
         kk_img = pg.transform.flip(kk_img, False, False)
-    elif y > 0:
+    elif y > 0:  # 下
         kk_img = pg.transform.rotate(kk_img, 90)
-    elif y < 0:
+    elif y < 0:  # 上
         kk_img = pg.transform.rotate(kk_img, -90)
 
     return kk_img
@@ -122,15 +144,22 @@ def verctor_norm(vector: tuple[int, int]) -> float:
 
 
 def main():
+    """
+    ゲームのメイン関数。
+    """
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     screen_rct = screen.get_rect()
 
+    # 背景画像の読み込み
     bg_img = load_assets()
+    # 加速値の初期値
     vx_init, vy_init = 5, 5
 
+    # 爆弾の加速値を格納するリスト
     bb_accs = [i for i in range(1, 11)]
 
+    # 爆弾の画像を格納するリスト
     bb_imgs = []
     for i in bb_accs:
         surface = pg.Surface((20 * i, 20 * i), pg.SRCALPHA)
