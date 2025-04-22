@@ -27,7 +27,6 @@ def check_bound(scr_rct, obj_rct) -> dict[str, bool]:
     }
 
 
-
 def load_assets():
     bg_img = pg.image.load("fig/pg_bg.jpg")
 
@@ -74,19 +73,20 @@ def gameover(screen: pg.Surface, bg_img: pg.Surface) -> None:
                 if event.key == pg.K_SPACE:
                     return
 
+
 def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
     kk_img = pg.image.load("fig/3.png")
     x, y = sum_mv
 
-    if x > 0 and y < 0: # 右上
+    if x > 0 and y < 0:  # 右上
         kk_img = pg.transform.flip(kk_img, True, False)
         kk_img = pg.transform.rotate(kk_img, 45)
-    elif x > 0 and y > 0: # 右下
+    elif x > 0 and y > 0:  # 右下
         kk_img = pg.transform.flip(kk_img, True, False)
         kk_img = pg.transform.rotate(kk_img, -45)
-    elif x < 0 and y < 0: # 左上
+    elif x < 0 and y < 0:  # 左上
         kk_img = pg.transform.rotate(kk_img, -45)
-    elif x < 0 and y > 0: # 左下
+    elif x < 0 and y > 0:  # 左下
         kk_img = pg.transform.rotate(kk_img, 45)
     elif x > 0:
         kk_img = pg.transform.flip(kk_img, True, False)
@@ -99,6 +99,7 @@ def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
 
     return kk_img
 
+
 def vector_diff(rect1: pg.Rect, rect2: pg.Rect) -> tuple[int, int]:
     """
     サーフェース間のベクトル差を計算する関数。
@@ -110,6 +111,7 @@ def vector_diff(rect1: pg.Rect, rect2: pg.Rect) -> tuple[int, int]:
 
     return (center1[0] - center2[0], center1[1] - center2[1])
 
+
 def verctor_norm(vector: tuple[int, int]) -> float:
     """
     ベクトルの大きさを計算する関数。
@@ -117,6 +119,7 @@ def verctor_norm(vector: tuple[int, int]) -> float:
     vectorのx成分とy成分を取得し、ピタゴラスの定理を使って大きさを計算して返す。
     """
     return (vector[0] ** 2 + vector[1] ** 2) ** 0.5
+
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
@@ -178,7 +181,6 @@ def main():
         if not bound["y"]:
             vy = -vy
 
-
         # ベクトル差を計算する
         distance_kouka_bb = vector_diff(kk_rct, bb_rct)
         # ベクトルのノルムを計算
@@ -191,7 +193,6 @@ def main():
             bb_rct.move_ip(vx, vy)
             last_vx, last_vy = vx, vy
         screen.blit(bb_img, bb_rct)
-
 
         # こうかとんと爆弾が衝突した時
         if kk_rct.colliderect(bb_rct):
