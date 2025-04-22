@@ -29,9 +29,8 @@ def check_bound(scr_rct, obj_rct) -> dict[str, bool]:
 
 def load_assets():
     bg_img = pg.image.load("fig/pg_bg.jpg")
-    kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
 
-    return bg_img, kk_img
+    return bg_img
 
 
 def initialize_objects(kk_img):
@@ -74,14 +73,37 @@ def gameover(screen: pg.Surface, bg_img: pg.Surface) -> None:
                 if event.key == pg.K_SPACE:
                     return
 
+def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
+    kk_img = pg.image.load("fig/3.png")
+    x, y = sum_mv
+
+    if x > 0 and y < 0: # 右上
+        kk_img = pg.transform.flip(kk_img, True, False)
+        kk_img = pg.transform.rotate(kk_img, 45)
+    elif x > 0 and y > 0: # 右下
+        kk_img = pg.transform.flip(kk_img, True, False)
+        kk_img = pg.transform.rotate(kk_img, -45)
+    elif x < 0 and y < 0: # 左上
+        kk_img = pg.transform.rotate(kk_img, -45)
+    elif x < 0 and y > 0: # 左下
+        kk_img = pg.transform.rotate(kk_img, 45)
+    elif x > 0:
+        kk_img = pg.transform.flip(kk_img, True, False)
+    elif x < 0:
+        kk_img = pg.transform.flip(kk_img, False, False)
+    elif y > 0:
+        kk_img = pg.transform.rotate(kk_img, 90)
+    elif y < 0:
+        kk_img = pg.transform.rotate(kk_img, -90)
+
+    return kk_img
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     screen_rct = screen.get_rect()
 
-    bg_img, kk_img = load_assets()
-    kk_rct = initialize_objects(kk_img)
+    bg_img = load_assets()
     vx_init, vy_init = 5, 5
 
     bb_accs = [i for i in range(1, 11)]
@@ -120,6 +142,10 @@ def main():
                 sum_mv[0] += mv[0]
                 sum_mv[1] += mv[1]
 
+        kk_img = get_kk_img(sum_mv)
+        if tmr == 0:
+            kk_rct = initialize_objects(kk_img)
+
         kk_rct.move_ip(sum_mv)
         kk_rct.clamp_ip(screen_rct)
         screen.blit(kk_img, kk_rct)
@@ -134,8 +160,6 @@ def main():
         screen.blit(bb_img, bb_rct)
 
         if kk_rct.colliderect(bb_rct):
-            gameover(screen, bg_img)
-            kk_rct = initialize_objects(kk_img)
             tmr = 0
 
         pg.display.update()
