@@ -140,6 +140,7 @@ def main():
     bb_img = bb_imgs[min(tmr // 500, 9)]
     bb_rct = initialize_random_object(bb_img)
     vx, vy = vx_init, vy_init
+    last_vx, last_vy = vx_init, vy_init
 
     while True:
         vx = (vx / abs(vx)) * vx_init * bb_accs[min(tmr // 500, 9)]
@@ -177,9 +178,11 @@ def main():
         if not bound["y"]:
             vy = -vy
 
+
+        # ベクトル差を計算する
         distance_kouka_bb = vector_diff(kk_rct, bb_rct)
+        # ベクトルのノルムを計算
         distance_norm = verctor_norm(distance_kouka_bb)
-        last_vx, last_vy = vx, vy
         if distance_norm < 300:
             bb_rct.move_ip(last_vx, last_vy)
         else:
@@ -189,6 +192,8 @@ def main():
             last_vx, last_vy = vx, vy
         screen.blit(bb_img, bb_rct)
 
+
+        # こうかとんと爆弾が衝突した時
         if kk_rct.colliderect(bb_rct):
             gameover(screen, bg_img)
             kk_rct = initialize_random_object(kk_img)
